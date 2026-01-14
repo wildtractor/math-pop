@@ -99,48 +99,94 @@ html, body {
   z-index: 20;
 }
 
-/* ─── DYNAMIC CONTAINERS ─── */
+/* ─── GRID / TABLE ─────────── */
+
+/* Grid Mode: 13x13 grid */
 .grid-board {
   display: grid;
-  grid-template-columns: repeat(13, 1fr); /* Scales to any width */
+  grid-template-columns: repeat(13, 1fr);
   gap: 2px;
+  margin: 0 auto;
   width: 100%;
   max-width: 600px;
-  margin: 0 auto;
+  height: 100%;
+  align-content: center;
 }
 
+/* Table Mode: 2 Columns of "Squares" */
 .answers {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 Columns for mobile */
-  gap: 12px;
+  grid-template-columns: 1fr 1fr; /* 2 Columns */
+  gap: 10px;
   width: 100%;
-  padding: 10px 10px 80px 10px; /* Space for bubbles */
+  height: 100%;
+  overflow-y: auto; /* Scroll vertically */
+  padding-bottom: 60px; /* Space for bubbles */
+  align-content: start; /* Start from top */
 }
 
-/* ─── TILE REFINEMENTS ─── */
+/* Generic Cell Styling */
+.grid-cell,
+.table-cell,
+.grid-header,
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Grid Mode Specifics */
+.grid-cell, .grid-header {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  font-size: clamp(8px, 2.5vw, 16px);
+}
+.grid-header {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+.grid-cell {
+  background: rgba(255,255,255,0.9);
+  color: #6d4cff;
+}
+
+/* Table Mode Specifics - The "Squares" */
 .table-cell {
   background: white;
   color: #6d4cff;
   border-radius: 12px;
-  font-size: clamp(14px, 4vw, 20px); /* Adaptive text size */
-  box-shadow: 0 4px 0 rgba(0,0,0,0.1);
-  padding: 20px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 2 / 1; /* Rectangular tiles as requested */
-  transition: transform 0.1s ease;
+  font-size: 18px; /* Readable text size */
+  box-shadow: 0 3px 0 rgba(0,0,0,0.15);
+  padding: 16px 8px; /* Make it look like a nice tile */
+  white-space: nowrap; /* Keep equation on one line */
+  aspect-ratio: 2/1; /* Rectangular tile */
 }
 
-/* ─── BUBBLE CONTRAST FIX ─── */
-/* Since you are keeping white cells, we use a darker halo on the bubble */
-.fall-bubble {
-  /* ... previous positioning ... */
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), rgba(0,150,255,0.4));
-  box-shadow: 0 0 20px rgba(0, 120, 255, 0.6), 0 10px 20px rgba(0,0,0,0.2);
-  border: 2px solid rgba(0, 120, 255, 0.8);
-  color: #1e3a8a; /* Dark blue text for white background contrast */
-  backdrop-filter: blur(4px);
+.grid-cell:active, .table-cell:active {
+  transform: scale(0.95);
+  box-shadow: none;
+  transform: translateY(3px);
+}
+
+.correct {
+  background: #22c55e !important;
+  color: white !important;
+  pointer-events: none;
+}
+
+.wrong {
+  background: #ef4444 !important;
+  color: white !important;
+  animation: shake 0.3s;
+
+  /* 👇 New: Locks the button permanently */
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+  border: 2px solid #b91c1c;
 }
 
 /* ─── FALLING BUBBLE ───────── */
