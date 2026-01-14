@@ -1,0 +1,5 @@
+sounds/
+ ├── pop.mp3
+ ├── fail.mp3
+ ├── gameover.mp3
+ └── click.mp3   (optional)
