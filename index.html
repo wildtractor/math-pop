@@ -1,86 +1,432 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#6d4cff">
+* {
+  box-sizing: border-box;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
 
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,700,1,0" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Bubble Math Pop!</title>
-    <link rel="stylesheet" href="style.css" />
-</head>
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: linear-gradient(180deg,#6d4cff,#4b2bbf);
+  color: white;
+  overscroll-behavior: none;
+}
 
-<body>
+/* ─── TOP BAR ───────────────── */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  height: 50px;
+}
 
-<header class="top-bar">
-    <div class="logo">🫧 Math Pop!</div>
+.logo {
+  font-size: 25px;
+  font-weight: 900;
+}
 
-    <div class="volume-control">
-        <span id="volumeIcon" class="material-symbols-rounded">volume_up</span>
-        <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="0.7"/>
-    </div>
-</header>
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-<div class="table-scroll">
-    <button id="modeGrid" class="mode-btn active">Grid</button>
-    <button class="table-btn active" data-table="1">1</button>
-    <button class="table-btn" data-table="2">2</button>
-    <button class="table-btn" data-table="3">3</button>
-    <button class="table-btn" data-table="4">4</button>
-    <button class="table-btn" data-table="5">5</button>
-    <button class="table-btn" data-table="6">6</button>
-    <button class="table-btn" data-table="7">7</button>
-    <button class="table-btn" data-table="8">8</button>
-    <button class="table-btn" data-table="9">9</button>
-    <button class="table-btn" data-table="10">10</button>
-    <button class="table-btn" data-table="11">11</button>
-    <button class="table-btn" data-table="12">12</button>
-</div>
+#volumeSlider {
+  width:160px;
+}
 
-<main class="main">
-    <div class="board">
-        <div id="question" class="question"></div>
+/* ─── TABLE SELECTOR ────────── */
+.table-scroll {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.table-scroll::-webkit-scrollbar {
+  display: none;
+}
 
-        <div id="answers" class="answers"></div>
+.table-btn,
+.mode-btn {
+  min-width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 900;
+  font-size: 16px;
+  background: white;
+  color: #6d4cff;
+  flex-shrink: 0;
+}
 
-        <div id="gridBoard" class="grid-board hidden"></div>
+.table-btn.active,
+.mode-btn.active {
+  background: #22c55e;
+  color: white;
+}
 
-        <div id="fallArea" class="fall-area hidden">
-            <div id="fallBubble" class="fall-bubble">24</div>
-        </div>
-    </div>
+/* ─── MAIN ─────────────────── */
+.main {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  gap: 8px;
+  /* 👇 CHANGE THESE TWO LINES 👇 */
+  height: calc(100vh - 120px - env(safe-area-inset-bottom));
+  height: calc(100dvh - 140px - env(safe-area-inset-bottom));
+}
 
-    <div class="controls">
-        <button id="startBtn" class="play-btn">
-            <span class="material-symbols-rounded icon-large">play_arrow</span>
-        </button>
+.board {
+  background: #8b7ce3;
+  border-radius: 16px;
+  padding: 8px;
+  position: relative;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-        <div class="speed-control">
-            <label>Speed</label>
-            <input id="speedSlider" type="range" min="1" max="10" step="1" value="2"/>
-        </div>
-    </div>
-</main>
+.question {
+  font-size: 22px;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 4px;
+  min-height: 28px;
+  z-index: 20;
+}
 
-<<footer class="footer">
-    <span class="material-symbols-rounded" style="color:#ef4444;">favorite</span>
-    <span id="health">10</span>
-    &nbsp;&nbsp;
-    <span class="material-symbols-rounded" style="color:#fde047;">star</span>
-    <span id="score">0</span>
-</footer>
+/* ─── DYNAMIC CONTAINERS ─── */
+.grid-board {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr); /* Scales to any width */
+  gap: 2px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
 
-<div id="endScreen" class="end-screen hidden">
-    <div class="end-card">
-        <h2 id="endMessage"></h2>
-        <button id="replayBtn">Replay</button>
-        <button id="nextTableBtn">Next</button>
-        <button id="restartBtn">Restart</button>
-        <button id="quitBtn">Quit</button>
-    </div>
-</div>
+.answers {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 Columns for mobile */
+  gap: 12px;
+  width: 100%;
+  padding: 10px 10px 80px 10px; /* Space for bubbles */
+}
 
-<script src="game.js"></script>
-</body>
-</html>
+/* ─── TILE REFINEMENTS ─── */
+.table-cell {
+  background: white;
+  color: #6d4cff;
+  border-radius: 12px;
+  font-size: clamp(14px, 4vw, 20px); /* Adaptive text size */
+  box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+  padding: 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 2 / 1; /* Rectangular tiles as requested */
+  transition: transform 0.1s ease;
+}
+
+/* ─── BUBBLE CONTRAST FIX ─── */
+/* Since you are keeping white cells, we use a darker halo on the bubble */
+.fall-bubble {
+  /* ... previous positioning ... */
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), rgba(0,150,255,0.4));
+  box-shadow: 0 0 20px rgba(0, 120, 255, 0.6), 0 10px 20px rgba(0,0,0,0.2);
+  border: 2px solid rgba(0, 120, 255, 0.8);
+  color: #1e3a8a; /* Dark blue text for white background contrast */
+  backdrop-filter: blur(4px);
+}
+
+/* ─── FALLING BUBBLE ───────── */
+.fall-area {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 16px;
+  z-index: 10;
+}
+
+.fall-bubble {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+
+ /* Bluish Semi-transparent center */
+   background: radial-gradient(
+     circle at 30% 30%,
+     rgba(255, 255, 255, 0.2) 0%,
+     rgba(173, 216, 230, 0.2) 40%,  /* Light Blue / Cyan */
+     rgba(0, 191, 255, 0.35) 100%   /* Deep Sky Blue at the edges */
+   );
+
+  /* Inner glows for that "soapy" reflection */
+  box-shadow:
+    inset 0 0 20px rgba(255, 255, 255, 0.5),    /* Soft inner glow */
+    inset 10px 10px 20px rgba(255, 255, 255, 0.3), /* Light source reflection */
+    0 10px 20px rgba(0, 0, 0, 0.3);             /* Very light drop shadow */
+
+  border: 1px solid rgba(255, 255, 255, 0.4); /* Thin outer edge */
+
+  color: #ffffff; /* White text looks better on transparent bubbles */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Shadow on text to keep it readable */
+
+  font-weight: 900;
+  font-size: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  backdrop-filter: blur(2px); /* Makes whatever is behind the bubble look slightly refracted */
+}
+
+/* The "Glitter" or "Reflective Spot" on top */
+.fall-bubble::before {
+  content: "";
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  width: 30px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  transform: rotate(-45deg);
+  filter: blur(1px);
+}
+
+
+/* ─── CONTROLS (One Single Line) ─────────────── */
+.controls {
+  display: flex;
+  flex-direction: row; /* Forces side-by-side */
+  justify-content: space-between; /* Spreads them apart */
+  align-items: center; /* Vertically centers everything */
+  background: rgba(255,255,255,0.1);
+  padding: 8px 16px;
+  border-radius: 16px;
+  gap: 12px; /* Space between Play button and Slider group */
+}
+
+.play-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font-size: 24px;
+  border: none;
+  background: #22c55e;
+  color: white;
+  cursor: pointer;
+  display: flex; /* Centers the icon inside */
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  flex-shrink: 0; /* Prevents button from getting squished */
+}
+
+.speed-control {
+  display: flex;
+  flex-direction: row; /* 🟢 Puts "Speed" next to Slider */
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  flex-grow: 1; /* Fills the rest of the bar */
+  justify-content: flex-end; /* Pushes everything to the right */
+}
+
+/* Ensure the label sits nicely next to the slider */
+.speed-control label {
+  text-align: right;
+  width: auto;
+  white-space: nowrap; /* Prevents text wrapping */
+}
+
+/* Adjust slider width to fit nicely */
+#speedSlider {
+  width: 100%;
+  max-width: 240px; /* Stops it from getting too huge */
+}
+
+/* ─── CUSTOM SLIDER STYLING (Perfectly Aligned) ────────── */
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  width: 100%;
+  height: 50px; /* Touch target */
+  cursor: pointer;
+  margin: 0;
+
+  /* This centers the content inside the 40px height */
+  display: flex;
+  align-items: center;
+}
+
+/* 🟢 THE TRACK (The line) */
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 24px; /* Slightly thicker for better visibility */
+  border-radius: 24px;
+
+  /* perfectly vertical centered background */
+  background: linear-gradient(
+    to right,
+    #fde047 0%,
+    #fde047 var(--value, 50%),
+    rgba(255, 255, 255, 0.3) var(--value, 50%),
+    rgba(255, 255, 255, 0.3) 100%
+  );
+
+  /* Remove default borders */
+  border: none;
+}
+
+/* 🟢 THE THUMB (The circle) */
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  background: #fde047;
+
+  /* CENTERING MATH:
+     (Track Height / 2) - (Thumb Height / 2)
+     (12px / 2) - (32px / 2) = 6px - 16px = -10px
+  */
+  margin-top: -4px;
+
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  position: relative;
+  z-index: 2; /* Ensures thumb is always on top */
+}
+
+/* 🦊 FIREFOX SUPPORT */
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    to right,
+    #fde047 0%,
+    #fde047 var(--value, 50%),
+    rgba(255, 255, 255, 0.3) var(--value, 50%),
+    rgba(255, 255, 255, 0.3) 100%
+  );
+}
+
+input[type=range]::-moz-range-thumb {
+  border: none;
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  background: #fde047;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+}
+/* ─── FOOTER ───────────────── */
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* 👇 CHANGE HEIGHT TO AUTO so it can grow */
+  height: auto;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  align-items: center;
+  background: rgba(0,0,0,0.35);
+  font-size: 16px;
+  font-weight: bold;
+  backdrop-filter: blur(4px);
+  z-index: 50;
+
+  /* 👇 ADD THIS PADDING 👇 */
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-top: 8px; /* Adds a little space at the top for balance */
+}
+
+/* ─── END SCREEN ───────────── */
+.end-screen {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.end-card {
+  background: white;
+  color: #6d4cff;
+  padding: 24px;
+  border-radius: 20px;
+  text-align: center;
+  width: 85%;
+  max-width: 320px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.end-card h2 {
+  font-size: 20px;
+  margin-top: 0;
+  white-space: pre-wrap;
+}
+
+.end-card button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 800;
+  background: #6d4cff;
+  color: white;
+  cursor: pointer;
+}
+
+.hidden { display: none !important; }
+
+.shake {
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+/* ─── MOBILE TWEAKS ─────────── */
+@media (max-width: 600px) {
+  .board { padding: 4px; }
+  .grid-board { gap: 1px; }
+  .answers { gap: 8px; }
+}
+
+/* ─── ICONS ────────── */
+.material-symbols-rounded {
+  vertical-align: middle;
+  user-select: none;
+}
+
+/* Make the Play/Pause icon BIG */
+.icon-large {
+  font-size: 40px !important;
+}
