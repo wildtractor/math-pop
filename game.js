@@ -18,6 +18,11 @@ const volumeIcon = document.getElementById("volumeIcon");
 const replayBtn = document.getElementById("replayBtn");
 const quitBtn = document.getElementById("quitBtn");
 
+const welcomeScreen = document.getElementById("welcomeScreen");
+const playerNameInput = document.getElementById("playerNameInput");
+const savePlayerBtn = document.getElementById("savePlayerBtn");
+const scoreList = document.getElementById("scoreList");
+
 
 // ─── AUDIO STATE ──────────────────────
 let masterVolume = 0.7;
@@ -47,7 +52,57 @@ let animationId = null;     // Only once
 let currentFallValue = null;// Only once
 let spawnTimeout = null;    // Needed for your fix
 let failedCount = 0;
+let currentPlayer = "Guest";
+let leaderboard = JSON.parse(localStorage.getItem("mathPopLeaderboard")) || {};
 
+// ─── PLAYER & RECORD LOGIC ──────────────
+function initGame() {
+    renderLeaderboard();
+    welcomeScreen.classList.remove("hidden");
+}
+
+function renderLeaderboard() {
+    scoreList.innerHTML = "";
+    const sorted = Object.entries(leaderboard)
+        .sort((a, b) => b[1] - a[1]) // Sort by score
+        .slice(0, 5); // Top 5
+
+    sorted.forEach(([name, best]) => {
+        const li = document.createElement("li");
+        li.style.padding = "4px 0";
+        li.textContent = `⭐ ${name}: ${best} pts`;
+        scoreList.appendChild(li);
+    });
+}
+
+savePlayerBtn.onclick = () => {
+    const name = playerNameInput.value.trim();
+
+    if (name) {
+        // Set the global variable for the player
+        currentPlayer = name;
+
+        // 🟢 FIX: Update the Footer name immediately
+        playerNameDisplay.textContent = currentPlayer;
+
+        // Hide the welcome screen and start the game
+        welcomeScreen.classList.add("hidden");
+
+        // Initialize records and grid
+        if (!leaderboard[currentPlayer]) leaderboard[currentPlayer] = 0;
+        startGame();
+    } else {
+        alert("Please enter a name to play!");
+    }
+};
+
+// ─── UPDATE SCORE RECORD ────────────────
+function updateHighscore() {
+    if (score > (leaderboard[currentPlayer] || 0)) {
+        leaderboard[currentPlayer] = score;
+        localStorage.setItem("mathPopLeaderboard", JSON.stringify(leaderboard));
+    }
+}
 
 // ─── INITIALIZATION ───────────────────
 function syncSliderFill(slider) {
@@ -125,12 +180,16 @@ function spawnBubble() {
     multiplier = tableQueue.shift();
     currentFallValue = table * multiplier;
     questionEl.textContent = `Target: ${currentFallValue}`; // Simplified prompt
-  } else {
-    const a = Math.floor(Math.random() * 12) + 1;
-    const b = Math.floor(Math.random() * 12) + 1;
-    currentFallValue = a * b;
-  }
+ } else {
+     // Grid Mode: Pick random factors
+     const r = Math.floor(Math.random() * 12) + 1;
+     const c = Math.floor(Math.random() * 12) + 1;
+     currentFallValue = r * c;
 
+     // 🟢 Highlight the correct Row and Column headers
+     updateGridIndicators(r, c);
+   }
+fallBubble.textContent = currentFallValue;
   fallBubble.textContent = currentFallValue;
   bubbleY = 0;
   fallBubble.style.top = "0px";
@@ -139,7 +198,27 @@ function spawnBubble() {
   cancelAnimationFrame(animationId);
   animationId = requestAnimationFrame(fallLoop);
 }
+function updateGridIndicators(row, col) {
+  // Clear all previous indicators
+  document.querySelectorAll('.grid-header').forEach(h => {
+    h.classList.remove('active-indicator');
+    // Restore original number if it was changed to "?"
+    if (h.dataset.orig) h.textContent = h.dataset.orig;
+  });
 
+  // Find the specific row and column headers
+  const rowHeader = document.querySelector(`.grid-header[data-row="${row}"]`);
+  const colHeader = document.querySelector(`.grid-header[data-col="${col}"]`);
+
+  if (rowHeader && colHeader) {
+    rowHeader.classList.add('active-indicator');
+    colHeader.classList.add('active-indicator');
+
+    // 🟢 Change text to "?" to indicate the target line
+    rowHeader.textContent = "?";
+    colHeader.textContent = "?";
+  }
+}
 function fallLoop() {
   if (!falling) return;
 
@@ -342,14 +421,25 @@ function showNextTablePrompt() {
   endScreen.classList.remove("hidden");
 }
 
+// ─── UPDATED ENDGAME FUNCTION ──────────
 function endGame(msg) {
-  gameState = "idle";
-  falling = false;
-  playSound("gameover");
-  startBtn.querySelector("span").textContent = "play_arrow";
-  endMessage.textContent = `${msg}\n⭐ Score: ${score}`;
-  nextTableBtn.style.display = "none";
-  endScreen.classList.remove("hidden");
+    gameState = "idle";
+    falling = false;
+
+    // Save High Score
+    if (score > leaderboard[currentPlayer]) {
+        leaderboard[currentPlayer] = score;
+        localStorage.setItem("mathPop_Scores", JSON.stringify(leaderboard));
+    }
+
+    playSound("gameover");
+    startBtn.querySelector("span").textContent = "play_arrow";
+
+    // Display Personal Best in the message
+    endMessage.textContent = `${msg}\nPlayer: ${currentPlayer}\n⭐ Score: ${score}\n🏆 Best: ${leaderboard[currentPlayer]}`;
+
+    nextTableBtn.style.display = "none";
+    endScreen.classList.remove("hidden");
 }
 
 // ─── EVENT LISTENERS ──────────────────
