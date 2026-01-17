@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="manifest" href="manifest.json">
+
     <meta name="theme-color" content="#6d4cff">
 
     <meta charset="UTF-8" />
@@ -16,10 +16,17 @@
 <header class="top-bar">
     <div class="logo">🫧 Math Pop!</div>
 
-    <div class="volume-control">
-        <span id="volumeIcon" class="material-symbols-rounded">volume_up</span>
-        <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="0.7"/>
+    <div class="top-actions">
+        <button id="settingsBtn" class="icon-btn">
+            <span class="material-symbols-rounded">settings</span>
+        </button>
+
+        <div class="volume-control">
+            <span id="volumeIcon" class="material-symbols-rounded">volume_up</span>
+            <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="0.7"/>
+        </div>
     </div>
+
 </header>
 
 <div class="table-scroll">
@@ -40,7 +47,13 @@
 
 <main class="main">
     <div class="board">
+        <div id="idleBubbles" class="idle-bubbles hidden"></div>
         <div id="question" class="question"></div>
+
+        <!-- 🟢 EMPTY STATE MESSAGE -->
+        <div id="emptyHint" class="empty-hint hidden">
+            🎮 Pick a number and let’s go!
+        </div>
 
         <div id="answers" class="answers"></div>
 
@@ -50,6 +63,7 @@
             <div id="fallBubble" class="fall-bubble">24</div>
         </div>
     </div>
+
 
     <div class="controls">
         <button id="startBtn" class="play-btn">
@@ -66,7 +80,7 @@
 <div class="footer">
     <div class="player-info">
         <span class="material-symbols-rounded">person</span>
-        <span id="playerNameDisplay">Guest</span>
+        <span id="playerNameDisplay"></span>
     </div>
     <div class="stats">
         <span class="material-symbols-rounded">favorite</span>
@@ -76,20 +90,38 @@
     </div>
 </div>
 
-
-<div id="welcomeScreen" class="end-screen">
+<div id="settingsScreen" class="end-screen hidden">
     <div class="end-card">
-        <h2 style="color:#6d4cff">Welcome to Math Pop!</h2>
-        <input type="text" id="playerNameInput" placeholder="Enter Player Name"
-               style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ccc;">
-        <button id="savePlayerBtn">Start Game</button>
-        <div id="highScoresArea" style="margin-top: 20px; font-size: 14px; text-align: left;">
-            <strong>Top Scores:</strong>
-            <ul id="scoreList" style="list-style: none; padding: 0;"></ul>
-        </div>
-    </div>
 
+        <h2 id="settingsTitle">Welcome</h2>
+
+
+        <label class="settings-label"></label>
+        <button id="removePlayerBtn" class="secondary-btn">
+            Remove Player
+        </button>
+        <input
+                id="settingsPlayerName"
+                type="text"
+                placeholder="Enter name"
+                class="settings-input"
+        />
+        <button id="setPlayerNameBtn" class="primary-btn">
+            Set Player Name
+        </button>
+
+
+        <h3 class="settings-title">🏆 Last 5 Players</h3>
+        <ul id="settingsScoreList" class="score-list"></ul>
+
+        <button id="closeSettingsBtn" class="secondary-btn">
+            Close
+        </button>
+
+    </div>
 </div>
+
+
 <div id="endScreen" class="end-screen hidden">
     <div class="end-card">
         <h2 id="endMessage"></h2>
