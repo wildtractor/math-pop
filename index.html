@@ -30,8 +30,8 @@
 </header>
 
 <div class="table-scroll">
-    <button id="modeGrid" class="mode-btn active">Grid</button>
-    <button class="table-btn active" data-table="1">1</button>
+    <button id="closeSettingsBtn" class="bubble-top-btn"></button>
+    <button class="table-btn" data-table="1">1</button>
     <button class="table-btn" data-table="2">2</button>
     <button class="table-btn" data-table="3">3</button>
     <button class="table-btn" data-table="4">4</button>
@@ -43,6 +43,7 @@
     <button class="table-btn" data-table="10">10</button>
     <button class="table-btn" data-table="11">11</button>
     <button class="table-btn" data-table="12">12</button>
+    <button id="modeGrid" class="mode-btn">Grid</button>
 </div>
 
 <main class="main">
@@ -52,7 +53,7 @@
 
         <!-- 🟢 EMPTY STATE MESSAGE -->
         <div id="emptyHint" class="empty-hint hidden">
-            🫧 Pop the Bubbles!
+            🫧 Press the start button to begin.
         </div>
 
         <div id="answers" class="answers"></div>
@@ -114,9 +115,6 @@
         <h3 class="settings-title">🏆 Last 5 Players</h3>
         <ul id="settingsScoreList" class="score-list"></ul>
 
-        <button id="closeSettingsBtn" class="secondary-btn">
-            🫧 Bubble Time
-        </button>
 
     </div>
 </div>

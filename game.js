@@ -50,6 +50,7 @@ const sounds = {
 // ─── GAME STATE ───────────────────────
 let mode = "table";
 let table = 1;
+let selectedTable = null;
 let multiplier = 1;
 let health = 10;
 let score = 0;
@@ -97,21 +98,24 @@ function spawnIdleBubble() {
   const bubble = document.createElement("div");
   bubble.className = "idle-bubble";
 
-  // 🟢 SET SIZE: Slower and Bigger (70px to 110px)
+  // 🟢 RANDOM SIZE: 70px to 110px
   const size = 70 + Math.random() * 40;
   bubble.style.width = bubble.style.height = size + "px";
   bubble.style.fontSize = (size * 0.4) + "px";
-  bubble.style.left = Math.random() * 80 + 10 + "%";
 
-  // Set random slow speed
-  bubble.style.animationDuration = (10 + Math.random() * 8) + "s";
+  // 🟢 RANDOM PLACE: Pick any X and Y coordinate on the board
+  bubble.style.left = (Math.random() * 80 + 5) + "%";
+  bubble.style.top = (Math.random() * 110 + 10) + "%";
+
+  // 🟢 RANDOM DRIFT: Randomize speed and starting direction
+  bubble.style.animationDuration = (8 + Math.random() * 6) + "s";
+  bubble.style.animationDelay = "-" + (Math.random() * 10) + "s"; // Starts at a random frame
+
   bubble.textContent = Math.floor(Math.random() * 9) + 1;
-
-  // 🟢 POPPING LOGIC
   bubble.onclick = () => handlePop(bubble, true);
 
-  // Auto-pop after 7-12 seconds if not clicked
-  const lifeSpan = 7000 + Math.random() * 5000;
+  // Auto-pop logic
+  const lifeSpan = 9000 + Math.random() * 5000;
   setTimeout(() => {
     if (bubble.parentNode) handlePop(bubble, false);
   }, lifeSpan);
@@ -531,7 +535,9 @@ function buildTableRow() {
         cell.onclick = null;
 
         solvedCount++;
-        score += 10;
+        if (currentPlayer !== "Guest") {
+            score += 10;
+        }
         updateScoreUI();
 
 
@@ -570,7 +576,9 @@ function buildGrid() {
 
             pressedTiles.add(currentFallValue); // ✅ MARK TARGET DONE
 
-            score += 10;
+            if (currentPlayer !== "Guest") {
+                score += 10;
+            }
             updateScoreUI();
 
             popFallBubble();
@@ -842,31 +850,35 @@ quitBtn.onclick = () => {
 // ... (Keep your modeGridBtn and table-btn code below, it is already correct)
 
 modeGridBtn.onclick = () => {
-  mode = "grid";
   playSound("click");
-  exitWelcomeIfNeeded();
+
+  document
+    .querySelectorAll(".table-btn, .mode-btn")
+    .forEach(b => b.classList.remove("active"));
+
+  mode = "grid";
   modeGridBtn.classList.add("active");
-  document.querySelectorAll(".table-btn").forEach(b => b.classList.remove("active"));
+
+  exitWelcomeIfNeeded();
   prepareMode();
-  //startGame();
 };
+
 
 document.querySelectorAll(".table-btn").forEach(btn => {
-btn.onclick = () => {
-  playSound("click");
-  exitWelcomeIfNeeded();   // ✅ ADD
+  btn.onclick = () => {
+    playSound("click");
 
-  document.querySelectorAll(".table-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+    selectedTable = Number(btn.textContent.trim());
+    table = selectedTable;
+    mode = "table";
 
-  table = Number(btn.textContent.trim());
-  mode = "table";
-  modeGridBtn.classList.remove("active");
-
-  prepareMode();
-};
-
+    updateActiveTableButton();
+    exitWelcomeIfNeeded();
+    prepareMode();
+  };
 });
+
+
 
 volumeSlider.oninput = () => {
   masterVolume = Number(volumeSlider.value);
@@ -886,9 +898,13 @@ speedSlider.oninput = () => {
 function updateActiveTableButton() {
   document.querySelectorAll(".table-btn").forEach(btn => {
     const value = Number(btn.textContent.trim());
-    btn.classList.toggle("active", value === table);
+    btn.classList.toggle("active", value === selectedTable);
   });
+
+  // Grid button
+  modeGridBtn.classList.toggle("active", mode === "grid");
 }
+
 
 function openSettings() {
   settingsScreen.classList.remove("hidden");
@@ -946,6 +962,24 @@ function openSettings() {
   updateRemovePlayerButton();
 }
 
+const bubbleTimeBtn = document.getElementById("closeSettingsBtn");
+
+if (bubbleTimeBtn) {
+  bubbleTimeBtn.onclick = () => {
+    playSound("pop");
+
+    // Reset to bubble / home state
+    appState = "welcome";
+    gameState = "idle";
+
+    // Clear active table/grid buttons
+    document
+      .querySelectorAll(".table-btn, .mode-btn")
+      .forEach(b => b.classList.remove("active"));
+
+    enterWelcomeState();
+  };
+}
 
 
 
@@ -1115,7 +1149,12 @@ function resetSession() {
 }
 
 function updateScoreUI() {
-  scoreEl.textContent = score;
+  if (currentPlayer === "Guest") {
+    scoreEl.textContent = "—"; // 🟢 Hide score for guests
+    score = 0; // 🟢 Ensure guest score stays at zero
+  } else {
+    scoreEl.textContent = score; // 🟢 Show score for registered players
+  }
 }
 function hasWrongTiles() {
   return document.querySelectorAll(".table-cell.wrong").length > 0;
