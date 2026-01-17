@@ -23,7 +23,7 @@ html, body {
   align-items: center;
   padding: 8px 12px;
   height: 50px;
-   white-space: nowrap; 
+   white-space: nowrap;
 }
 
 .logo {
@@ -720,7 +720,7 @@ padding-top: 40px;
   z-index: 5;
 }
 
-<-- Welcome BUBBLES -->
+/*---Welcome BUBBLES --*/
 /* ─── UPDATED WELCOME BUBBLES ─── */
 .idle-bubbles {
   position: absolute;
@@ -732,9 +732,7 @@ padding-top: 40px;
 
 .idle-bubble {
   position: absolute;
-  bottom: -150px; /* Start lower to ensure smooth entry */
-  width: 60px;
-  height: 60px;
+  bottom: 10%;
   border-radius: 50%;
 
   /* 🟢 MATCHING: Bluish Semi-transparent center */
@@ -747,24 +745,54 @@ padding-top: 40px;
 
   /* 🟢 MATCHING: Inner glows and soft drop shadow */
   box-shadow:
-    inset 0 0 10px rgba(255, 255, 255, 0.5),
-    inset 5px 5px 10px rgba(255, 255, 255, 0.3),
-    0 5px 10px rgba(0, 0, 0, 0.2);
+    inset 0 0 20px rgba(255, 255, 255, 0.5),
+    inset 10px 10px 20px rgba(255, 255, 255, 0.3),
+    0 10px 20px rgba(0, 0, 0, 0.3);
 
-  /* 🟢 MATCHING: Thin outer edge and blur effect */
+  /* 🟢 MATCHING: Thin outer edge and blur */
   border: 1px solid rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(2px);
 
   color: #ffffff;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  font-family: 'Fredoka One', cursive; /* Playful kid font */
   font-weight: 900;
-  font-size: 24px;
 
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  animation: floatBubble 8s linear infinite;
+
+  /* Bouncy Movement */
+  animation: bounceAround 12s ease-in-out infinite alternate;
+}
+
+/* 🟢 MATCHING: The "Glitter" reflective spot */
+.idle-bubble::before {
+  content: "";
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  width: 25%; /* Responsive to bubble size */
+  height: 15%;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  transform: rotate(-45deg);
+  filter: blur(1px);
+}
+
+@keyframes bounceAround {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(120px, -150px) rotate(15deg); } /* Move right and up */
+  50%  { transform: translate(-120px, -300px) rotate(-15deg); } /* Cross to left */
+  75%  { transform: translate(100px, -450px) rotate(10deg); } /* Back to right */
+  100% { transform: translate(-50px, -600px) rotate(0deg); } /* Exit near top */
+}
+
+.idle-bubble {
+  /* ... existing styles ... */
+  /* 🟢 Faster Timing: Reduced from 12s-15s to 6s-10s */
+  animation: bounceAround 8s ease-in-out infinite alternate;
 }
 
 /* 🟢 MATCHING: The "Glitter" reflective spot */
@@ -817,3 +845,25 @@ padding-top: 40px;
 }
 
 
+/* ─── TARGET FLASH ANIMATION ─── */
+.target-flash {
+  animation: targetPop 0.6s ease-out;
+}
+
+@keyframes targetPop {
+  0% {
+    transform: translateX(-50%) scale(0.5);
+    color: #fde047; /* Bright Neon Yellow */
+    text-shadow: 0 0 20px #fde047;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.3);
+    color: #ffffff;
+    text-shadow: 0 0 30px #ffffff;
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+}

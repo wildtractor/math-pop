@@ -97,33 +97,43 @@ function spawnIdleBubble() {
   const bubble = document.createElement("div");
   bubble.className = "idle-bubble";
 
-  // Random number 1-9
+  // 🟢 SET SIZE: Slower and Bigger (70px to 110px)
+  const size = 70 + Math.random() * 40;
+  bubble.style.width = bubble.style.height = size + "px";
+  bubble.style.fontSize = (size * 0.4) + "px";
+  bubble.style.left = Math.random() * 80 + 10 + "%";
+
+  // Set random slow speed
+  bubble.style.animationDuration = (10 + Math.random() * 8) + "s";
   bubble.textContent = Math.floor(Math.random() * 9) + 1;
 
-  // Random size and horizontal position
-  const size = 36 + Math.random() * 30;
-  bubble.style.width = bubble.style.height = size + "px";
-  bubble.style.left = Math.random() * 90 + "%";
+  // 🟢 POPPING LOGIC
+  bubble.onclick = () => handlePop(bubble, true);
 
-  // Random speed (6s to 12s)
-  bubble.style.animationDuration = (6 + Math.random() * 6) + "s";
-
-  bubble.onclick = () => {
-    playSound("pop");
-    bubble.style.transform = "scale(1.5)";
-    bubble.style.opacity = "0";
-    setTimeout(() => {
-        bubble.remove();
-        spawnIdleBubble(); // Replace immediately
-    }, 200);
-  };
+  // Auto-pop after 7-12 seconds if not clicked
+  const lifeSpan = 7000 + Math.random() * 5000;
+  setTimeout(() => {
+    if (bubble.parentNode) handlePop(bubble, false);
+  }, lifeSpan);
 
   idleBubblesContainer.appendChild(bubble);
-
-  // Auto-remove if not popped to save memory
-  setTimeout(() => bubble.remove(), 14000);
 }
 
+function handlePop(bubble, playSnd) {
+  if (playSnd) playSound("pop");
+
+  // Pop animation
+  bubble.style.pointerEvents = "none";
+  bubble.style.transform = "scale(1.8)";
+  bubble.style.opacity = "0";
+  bubble.style.transition = "transform 0.3s, opacity 0.3s";
+
+  setTimeout(() => {
+    bubble.remove();
+    // Only respawn if we are still on the welcome screen
+    if (appState === "welcome") spawnIdleBubble();
+  }, 300);
+}
 function enterWelcomeState() {
   appState = "welcome";
   // Title
@@ -350,13 +360,19 @@ else {
   updateGridIndicators(r, c);
 }
 
+// 🟢 APPLY THE FLASH EFFECT
   fallBubble.textContent = currentFallValue;
+
+  // Reset animation
+  fallBubble.classList.remove("target-flash");
+  void fallBubble.offsetWidth; // Trigger reflow to restart animation
+  fallBubble.classList.add("target-flash");
+
   bubbleY = 0;
   fallBubble.style.top = "0px";
   fallBubble.style.opacity = "1";
-  fallBubble.style.transform = "translateX(-50%) scale(1)";
-
   falling = true;
+
   cancelAnimationFrame(animationId);
   animationId = requestAnimationFrame(fallLoop);
 }
