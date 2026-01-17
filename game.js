@@ -84,7 +84,7 @@ function startIdleBubbles() {
   stopIdleBubbles(); // Clear existing
   idleBubblesContainer.classList.remove("hidden");
   // Spawn a new bubble every 1.2 seconds
-  idleBubbleTimer = setInterval(spawnIdleBubble, 1200);
+  idleBubbleTimer = setInterval(spawnIdleBubble, 600);
 }
 
 function stopIdleBubbles() {
