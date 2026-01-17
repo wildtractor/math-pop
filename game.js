@@ -75,6 +75,10 @@ let recentPlayers = JSON.parse(localStorage.getItem("mathPopRecentPlayers")) || 
 
   let pressedTiles = new Set();
   let appState = "welcome"; // "welcome" | "ready" | "running"
+// 🔴 Clear any previous green selection
+document
+  .querySelectorAll(".score-list li")
+  .forEach(li => li.classList.remove("active"));
 
 function startIdleBubbles() {
   stopIdleBubbles(); // Clear existing
@@ -897,16 +901,27 @@ function openSettings() {
 
       // ✅ TAP = SELECT ONLY (no apply)
       li.style.cursor = "pointer";
-      li.onclick = () => {
-        settingsPlayerName.value = p.name;
-        playSound("click");
-      };
+     li.onclick = () => {
+       playSound("click");
 
-      // ⭐ Highlight active player
+       // Fill input
+       settingsPlayerName.value = p.name;
+
+       // 🔴 Clear previous selection
+       document
+         .querySelectorAll(".score-list li")
+         .forEach(el => el.classList.remove("active"));
+
+       // 🟢 Mark this one as selected
+       li.classList.add("active");
+     };
+
+
+      /* Highlight active player
       if (p.name === currentPlayer) {
         li.style.fontWeight = "bold";
         li.style.color = "#22c55e";
-      }
+      }*/
 
       settingsScoreList.appendChild(li);
     });
