@@ -300,7 +300,7 @@ font-size: clamp(12px, 3.5vw, 18px);
 
 /* ─── CONTROLS (One Single Line) ─────────────── */
 .controls {
-  display: flex;
+  display: none;
   flex-direction: row; /* Forces side-by-side */
   justify-content: space-between; /* Spreads them apart */
   align-items: center; /* Vertically centers everything */
@@ -436,25 +436,74 @@ input[type=range]::-moz-range-thumb {
   z-index: 1000;
 }
 
-.player-info, .stats {
-  display: flex;
-  align-items: center; /* 🟢 Forces perfect vertical center */
-  gap: 10px;
-}
-
-/* 🟢 Force font and icons to share the same baseline */
-#playerNameDisplay, #health, #score, .material-symbols-rounded {
-  line-height: 1;
-  display: flex;
+.player-btn {
+  /* Layout */
+  display: inline-flex;
   align-items: center;
-  font-weight: 900;
+  gap: 8px;
+  padding: 6px 16px;
+
+  /* Background & Border */
+  background-color: #312a6d; /* Deep purple base */
+  border: 1.5px solid #5d52ad; /* Lighter purple "rim" */
+  border-radius: 100px; /* Pill shape */
+
+  /* Text & Icon Styling */
+  color: #ffffff;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+
+  /* Depth Effects */
+  box-shadow: 0 0 0 2px rgba(93, 82, 173, 0.2); /* Outer soft glow */
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+.player-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-/* Ensure material icons don't have extra bottom margin */
-.material-symbols-rounded {
-  display: block;
-  font-size: 20px;
+.player-name {
+  font-weight: 600;
+  word-break: break-word; /* 🔑 handles long names */
 }
+
+.player-score {
+  font-size: 13px;
+  opacity: 0.8;
+  padding-left: 18px; /* aligns under name text */
+}
+.score-list li.active {
+  background: #eafff1;
+  border-radius: 10px;
+}
+
+/* Hover Effect: Brighten and Glow */
+.player-btn:hover {
+  background-color: #3d348b;
+  border-color: #7a6dec;
+  box-shadow: 0 0 12px rgba(122, 109, 236, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Click Effect: Sinks down */
+.player-btn:active {
+  transform: translateY(1px);
+  background-color: #251f54;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Icon refinement */
+.player-btn .material-symbols-rounded {
+  font-size: 20px;
+  vertical-align: middle;
+}
+
+
 /* ─── SETTINGS SCREEN ───────────── */
 
 .settings-screen {
@@ -769,7 +818,7 @@ input[type=range]::-moz-range-thumb {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-
+ will-change: transform, opacity;
   /* Bouncy Movement */
   animation: bounceAround 12s ease-in-out infinite alternate;
 }
@@ -957,4 +1006,25 @@ input[type=range]::-moz-range-thumb {
 @keyframes bubbleHoverFloat {
   from { transform: scale(1.12) translateY(0); }
   to   { transform: scale(1.15) translateY(-4px); }
+}
+
+.settings-close-btn {
+  margin-top: 16px;
+  width: 100%;
+
+  padding: 12px;
+  border-radius: 12px;
+
+  background: #e5e7eb;
+  color: #374151;
+
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.settings-close-btn:active {
+  background: #d1d5db;
 }

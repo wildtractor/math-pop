@@ -17,9 +17,6 @@
     <div class="logo">🫧 Buble Math Pop!</div>
 
     <div class="top-actions">
-        <button id="settingsBtn" class="icon-btn">
-            <span class="material-symbols-rounded">settings</span>
-        </button>
 
         <div class="volume-control">
             <span id="volumeIcon" class="material-symbols-rounded">volume_up</span>
@@ -53,7 +50,7 @@
 
         <!-- 🟢 EMPTY STATE MESSAGE -->
         <div id="emptyHint" class="empty-hint hidden">
-            🫧 Press the start button to begin.
+            🫧 Press any number to begin
         </div>
 
         <div id="answers" class="answers"></div>
@@ -66,7 +63,7 @@
     </div>
 
 
-    <div class="controls">
+    <div class="controls" id="controlsPanel">
         <button id="startBtn" class="play-btn">
             <span class="material-symbols-rounded icon-large">play_arrow</span>
         </button>
@@ -76,13 +73,15 @@
             <input id="speedSlider" type="range" min="1" max="10" step="1" value="2"/>
         </div>
     </div>
-</main>
+
 
 <div class="footer">
-    <div class="player-info">
+    <button id="settingsTrigger" class="player-btn">
         <span class="material-symbols-rounded">person</span>
-        <span id="playerNameDisplay"></span>
-    </div>
+        <span id="playerNameDisplay">name</span>
+    </button>
+
+
     <div class="stats">
         <span class="material-symbols-rounded">favorite</span>
         <span id="health">10</span>
@@ -108,12 +107,16 @@
                 class="settings-input"
         />
         <button id="setPlayerNameBtn" class="primary-btn">
-            Set Name & Start
+            Set Name
         </button>
 
 
         <h3 class="settings-title">🏆 Last 5 Players</h3>
         <ul id="settingsScoreList" class="score-list"></ul>
+        <button id="closeSettingsOnlyBtn" class="settings-close-btn">
+            Close
+        </button>
+
 
 
     </div>

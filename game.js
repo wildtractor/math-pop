@@ -18,7 +18,6 @@ const volumeIcon = document.getElementById("volumeIcon");
 const replayBtn = document.getElementById("replayBtn");
 const quitBtn = document.getElementById("quitBtn");
 
-const settingsBtn = document.getElementById("settingsBtn");
 const settingsScreen = document.getElementById("settingsScreen");
 const settingsPlayerName = document.getElementById("settingsPlayerName");
 const settingsScoreList = document.getElementById("settingsScoreList");
@@ -30,6 +29,26 @@ const clearCurrentBtn = document.getElementById("clearCurrentBtn");
 const settingsTitle = document.getElementById("settingsTitle");
 const emptyHint = document.getElementById("emptyHint");
 const idleBubblesContainer = document.getElementById("idleBubbles");
+const MAX_IDLE_BUBBLES = 12; // 👈 safe number (10–15 is ideal)
+
+
+const controlsPanel = document.getElementById("controlsPanel");
+
+function hideControls() {
+  controlsPanel.style.display = "none";
+}
+
+function showControls() {
+  controlsPanel.style.display = "flex";
+}
+
+function syncControlsVisibility() {
+  if (appState === "welcome") {
+    hideControls();
+  } else {
+    showControls();
+  }
+}
 
 
 
@@ -49,6 +68,7 @@ const sounds = {
 
 // ─── GAME STATE ───────────────────────
 let mode = "table";
+let nameJustSaved = false;
 let table = 1;
 let selectedTable = null;
 let multiplier = 1;
@@ -81,20 +101,41 @@ document
   .querySelectorAll(".score-list li")
   .forEach(li => li.classList.remove("active"));
 
+
+  const closeSettingsOnlyBtn = document.getElementById("closeSettingsOnlyBtn");
+
+  if (closeSettingsOnlyBtn) {
+    closeSettingsOnlyBtn.onclick = () => {
+      playSound("click");          // optional
+      settingsScreen.classList.add("hidden");
+    };
+  }
+
+
 function startIdleBubbles() {
-  stopIdleBubbles(); // Clear existing
+  appState = "welcome";
+  syncControlsVisibility();
+
+  stopIdleBubbles(); // clear existing
   idleBubblesContainer.classList.remove("hidden");
-  // Spawn a new bubble every 1.2 seconds
-  idleBubbleTimer = setInterval(spawnIdleBubble, 600);
+
+  idleBubbleTimer = setInterval(spawnIdleBubble, 1200);
 }
+
 
 function stopIdleBubbles() {
-  idleBubblesContainer.classList.add("hidden");
-  idleBubblesContainer.innerHTML = "";
   clearInterval(idleBubbleTimer);
+  idleBubbleTimer = null;
+  idleBubblesContainer.innerHTML = "";
 }
 
+
+
 function spawnIdleBubble() {
+  if (idleBubblesContainer.children.length >= MAX_IDLE_BUBBLES) {
+    return;
+  }
+
   const bubble = document.createElement("div");
   bubble.className = "idle-bubble";
 
@@ -140,6 +181,7 @@ function handlePop(bubble, playSnd) {
 }
 function enterWelcomeState() {
   appState = "welcome";
+  syncControlsVisibility();
   // Title
   if (settingsTitle) {
     settingsTitle.textContent = "👋 Welcome";
@@ -427,6 +469,14 @@ if (health <= 0) {
 
   animationId = requestAnimationFrame(fallLoop);
 }
+const settingsTrigger = document.getElementById("settingsTrigger");
+
+if (settingsTrigger) {
+  settingsTrigger.onclick = () => {
+    playSound("click");
+    openSettings();
+  };
+}
 
 
 function popFallBubble() {
@@ -618,45 +668,37 @@ function handleWrong(element) {
 
 // ─── UI CONTROLS ──────────────────────
 function prepareMode() {
+  // Stop background animations
+  stopIdleBubbles();
+  idleBubblesContainer.classList.add("hidden");
 
-const showIdle = (appState === "welcome");
-
-      if (showIdle) {
-            startIdleBubbles();
-        } else {
-            // 🔴 STOP bubbles if any table (1-12) or Grid is selected
-            stopIdleBubbles();
-        }
-
-
+  // Reset internal physics
   clearTimeout(spawnTimeout);
   falling = false;
   cancelAnimationFrame(animationId);
-  gameState = "idle";
-  //pressedTiles.clear();
 
-  startBtn.querySelector("span").textContent = "play_arrow";
+  // UI Cleanup
+  emptyHint.classList.add("hidden");
   endScreen.classList.add("hidden");
-
-  // 🟢 DEFAULT: show empty hint
-  emptyHint.classList.remove("hidden");
-
-  answersEl.classList.add("hidden");
-  gridBoard.classList.add("hidden");
-  questionEl.textContent = "";
+  startBtn.querySelector("span").textContent = "play_arrow";
 
   if (mode === "table") {
-    emptyHint.classList.add("hidden");
+    gridBoard.classList.add("hidden");
     answersEl.classList.remove("hidden");
     questionEl.classList.remove("hidden");
-    buildTableRow();
     questionEl.textContent = `Table ${table}`;
+    buildTableRow();
   } else {
-    emptyHint.classList.add("hidden");
+    answersEl.classList.add("hidden");
+    questionEl.classList.add("hidden");
     gridBoard.classList.remove("hidden");
     buildGrid();
   }
+
+  // Ensure the main controls are visible now that a mode is picked
+  syncControlsVisibility();
 }
+
 
 
 function screenShake() {
@@ -852,14 +894,17 @@ quitBtn.onclick = () => {
 modeGridBtn.onclick = () => {
   playSound("click");
 
-  document
-    .querySelectorAll(".table-btn, .mode-btn")
-    .forEach(b => b.classList.remove("active"));
-
   mode = "grid";
+  appState = "ready";
+  gameState = "idle";
+
+  stopIdleBubbles();
+  settingsScreen.classList.add("hidden");
+
+  document.querySelectorAll(".table-btn, .mode-btn")
+    .forEach(b => b.classList.remove("active"));
   modeGridBtn.classList.add("active");
 
-  exitWelcomeIfNeeded();
   prepareMode();
 };
 
@@ -872,12 +917,16 @@ document.querySelectorAll(".table-btn").forEach(btn => {
     table = selectedTable;
     mode = "table";
 
+    appState = "ready"; // Force state to ready
+    gameState = "idle"; // Ensure we aren't mid-game
+
+    stopIdleBubbles();   // Stop the background bubbles
+    settingsScreen.classList.add("hidden"); // Close settings if open
+
     updateActiveTableButton();
-    exitWelcomeIfNeeded();
-    prepareMode();
+    prepareMode(); // This will now build the table and show it
   };
 });
-
 
 
 volumeSlider.oninput = () => {
@@ -907,6 +956,7 @@ function updateActiveTableButton() {
 
 
 function openSettings() {
+nameJustSaved = false;
   settingsScreen.classList.remove("hidden");
 
   // 🧠 Title depends on state
@@ -929,24 +979,45 @@ function openSettings() {
   } else {
     recentPlayers.forEach((p, i) => {
       const li = document.createElement("li");
-      li.innerHTML = `🏆 ${i + 1}. <strong>${p.name}</strong> — ⭐ ${p.score}`;
+      li.innerHTML = `
+        <div class="player-row">
+          <div class="player-name">
+            🏆 ${i + 1}. ${p.name}
+          </div>
+          <div class="player-score">
+            ⭐ ${p.score}
+          </div>
+        </div>
+      `;
+
+
 
       // ✅ TAP = SELECT ONLY (no apply)
-      li.style.cursor = "pointer";
-     li.onclick = () => {
-       playSound("click");
+  li.onclick = () => {
+    playSound("click");
 
-       // Fill input
-       settingsPlayerName.value = p.name;
+    // 🔁 SECOND CLICK → close settings only
+    if (nameJustSaved && currentPlayer === p.name) {
+      settingsScreen.classList.add("hidden");
+      nameJustSaved = false;
+      return;
+    }
 
-       // 🔴 Clear previous selection
-       document
-         .querySelectorAll(".score-list li")
-         .forEach(el => el.classList.remove("active"));
+    // 🟢 FIRST CLICK → set name only
+    setActivePlayer(p.name);
 
-       // 🟢 Mark this one as selected
-       li.classList.add("active");
-     };
+    // fill input
+    settingsPlayerName.value = p.name;
+
+    // visual highlight
+    document
+      .querySelectorAll(".score-list li")
+      .forEach(el => el.classList.remove("active"));
+    li.classList.add("active");
+
+    nameJustSaved = true;
+  };
+
 
 
       /* Highlight active player
@@ -995,10 +1066,10 @@ setCurrentPlayer(name);
   }
 };
 
-settingsBtn.onclick = () => {
+/*settingsBtn.onclick = () => {
   playSound("click");
   openSettings();
-};
+};*/
 
 closeSettingsBtn.onclick = () => {
   playSound("click");
@@ -1032,28 +1103,27 @@ console.log("recordRecentPlayer called", name, score);
 setPlayerNameBtn.onclick = () => {
   playSound("click");
 
+  // 🔁 SECOND CLICK → just close settings
+  if (nameJustSaved) {
+    settingsScreen.classList.add("hidden");
+    nameJustSaved = false;
+    return;
+  }
+
+  // 🟢 FIRST CLICK → set name only
   const name = settingsPlayerName.value.trim() || "Guest";
-
-  // ✅ Visual feedback
-  setPlayerNameBtn.classList.add("success");
-
-  // ✅ Apply player ONLY here
   setActivePlayer(name);
 
+  // visual feedback
+  setPlayerNameBtn.classList.add("success");
+  nameJustSaved = true;
+
   setTimeout(() => {
-   setPlayerNameBtn.classList.remove("success");
-
-    // ✅ Close welcome/settings screen
-    settingsScreen.classList.add("hidden");
-
-    // ✅ Exit welcome → ready state
-    appState = "ready";
-    stopIdleBubbles();
-    // ✅ Prepare board but DO NOT start game
-    prepareMode();
-
-  }, 300);
+    setPlayerNameBtn.classList.remove("success");
+  }, 600);
 };
+
+
 
 
 
@@ -1159,12 +1229,16 @@ function updateScoreUI() {
 function hasWrongTiles() {
   return document.querySelectorAll(".table-cell.wrong").length > 0;
 }
+
 function exitWelcomeIfNeeded() {
   if (appState === "welcome") {
     appState = "ready";
     stopIdleBubbles();
+    syncControlsVisibility(); // ✅ SHOW CONTROLS
   }
 }
+
+
 
 function enterLockedReadyState() {
   appState = "ready"; // 🔓 allows table/grid
